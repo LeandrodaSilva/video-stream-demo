@@ -25,8 +25,6 @@ function readRangeHeader(range: string | null, totalLength: number) {
   return result;
 }
 
-let cache;
-
 await serve(async (req) => {
   const url = new URL(req.url);
 
@@ -46,23 +44,15 @@ await serve(async (req) => {
   if (url.pathname === "/video") {
     const fileURL = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fPS8g3EDgTdmLqgGmjfjUwBeBOOKByMqyNKeEBYAH5J9ltXwgXOR-VRlOV0Jaakr/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/Big%20Buck%20Bunny%20Demo.mp4`;
     const fileURL2 = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`;
-    if (cache) {
-      const resp = await fetch(fileURL2, {
-        method: "HEAD",
-      });
-      stream = cache;
-      contentLength = resp.headers.get("content-length");
-    } else {
-      const resp = await fetch(fileURL2);
-      // const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`);
-      // const file = await Deno.open(resp.path, { read: true });
-      // const blob = await readAll(file);
-      // stream = blob.buffer;
-      const blob = await resp.blob();
-      stream = await blob.arrayBuffer();
-      cache = stream;
-      contentLength = resp.headers.get("content-length");
-    }
+
+    const resp = await fetch(fileURL2);
+    // const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`);
+    // const file = await Deno.open(resp.path, { read: true });
+    // const blob = await readAll(file);
+    // stream = blob.buffer;
+    const blob = await resp.blob();
+    stream = await blob.arrayBuffer();
+    contentLength = resp.headers.get("content-length");
     contentType = "video/mp4";
   } else {
     return new Response("Not Found", {
