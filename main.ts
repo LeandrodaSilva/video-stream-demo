@@ -1,84 +1,48 @@
 import {serve} from "https://deno.land/std@0.155.0/http/server.ts";
+import Router from "./router.ts";
+import readRangeHeader from "./readRangeHeader.ts";
 
-function readRangeHeader(range: string | null, totalLength: number) {
-  if (range == null || range.length == 0)
-    return null;
+const router = new Router();
+router.get("/", async () => {
+  const html = await Deno.readTextFile("./public/index.html");
+  return new Response(html, {
+    headers: {
+      "content-type": "text/html; charset=UTF-8",
+    },
+  });
+});
 
-  var array = range.split(/bytes=([0-9]*)-([0-9]*)/);
-  var start = parseInt(array[1]);
-  var end = parseInt(array[2]);
-  var result = {
-    Start: isNaN(start) ? 0 : start,
-    End: isNaN(end) ? (totalLength - 1) : end
-  };
+router.get<{file: string}>("/video/:file", async (req, params) => {
+  const {file} = params;
+  const fileURL = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/x4yitashSSfnmYt0Hx1Chx1FHM2thUiXw5ko9wk7KdV61WxexoAHetsH2Qo-mJpU/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/${file}`;
 
-  if (!isNaN(start) && isNaN(end)) {
-    result.Start = start;
-    result.End = totalLength - 1;
-  }
+  const resp = await fetch(fileURL);
+  const blob = await resp.blob();
+  const stream = await blob.arrayBuffer();
+  const contentLength = parseInt(resp.headers.get("content-length") || "0") || 0;
+  const contentType = "video/mp4";
 
-  if (isNaN(start) && !isNaN(end)) {
-    result.Start = totalLength - end;
-    result.End = totalLength - 1;
-  }
 
-  return result;
-}
-
-await serve(async (req) => {
-  const url = new URL(req.url);
-
-  if (url.pathname === "/") {
-    const html = await Deno.readTextFile("./public/index.html");
-    return new Response(html, {
-      headers: {
-        "content-type": "text/html; charset=UTF-8",
-      },
-    });
-  }
-
-  let contentLength;
-  let contentType;
-  let stream;
-
-  if (url.pathname === "/video") {
-    const fileURL = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fPS8g3EDgTdmLqgGmjfjUwBeBOOKByMqyNKeEBYAH5J9ltXwgXOR-VRlOV0Jaakr/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/Big%20Buck%20Bunny%20Demo.mp4`;
-    const fileURL2 = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`;
-
-    const resp = await fetch(fileURL2);
-    // const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`);
-    // const file = await Deno.open(resp.path, { read: true });
-    // const blob = await readAll(file);
-    // stream = blob.buffer;
-    const blob = await resp.blob();
-    stream = await blob.arrayBuffer();
-    contentLength = resp.headers.get("content-length");
-    contentType = "video/mp4";
-  } else {
-    return new Response("Not Found", {
-      status: 404,
-    });
-  }
-
-  const responseHeaders: {[key: string]: any} = {};
+  const responseHeaders = new Headers();
   const rangeRequest = readRangeHeader(req.headers.get("range"), contentLength);
 
-  if (rangeRequest == null) {
-    responseHeaders['Content-Type'] = contentType;
-    responseHeaders['Content-Length'] = contentLength;  // File size.
-    responseHeaders['Accept-Ranges'] = 'bytes';
+  responseHeaders.set("content-type", contentType);
+  responseHeaders.set("accept-ranges", "bytes");
+  responseHeaders.set("X-Content-Type-Options", "nosniff");
 
-    return new Response(stream.slice(0, 1), {
+  if (rangeRequest == null) {
+    responseHeaders.set("Content-Length", contentLength.toString());
+    return new Response(stream, {
       status: 206,
       headers: responseHeaders
     });
   }
 
-  var start = rangeRequest.Start;
-  var end = rangeRequest.End;
+  const start = rangeRequest.Start;
+  const end = rangeRequest.End;
 
   if (start >= contentLength || end >= contentLength) {
-    responseHeaders['Content-Range'] = 'bytes */' + contentLength; // File size.
+    responseHeaders.set("Content-Range", 'bytes */' + contentLength);
 
     return new Response(null, {
       status: 416,
@@ -86,12 +50,9 @@ await serve(async (req) => {
     })
   }
 
-  responseHeaders['Content-Range'] = 'bytes ' + start + '-' + end + '/' + contentLength;
-  responseHeaders['Content-Length'] = start === end ? 0 : (end - start + 1);
-  responseHeaders['Content-Type'] = contentType;
-  responseHeaders['Accept-Ranges'] = 'bytes';
-  responseHeaders['Cache-Control'] = 'no-cache';
-  responseHeaders['Etag'] = 'W/"' + contentLength + '-' + Date.now() + '"';
+  responseHeaders.set("Content-Range", 'bytes ' + start + '-' + end + '/' + contentLength);
+  responseHeaders.set("Content-Length", start === end ? "0" : (end - start + 1).toString());
+  responseHeaders.set("Cache-Control", "no-cache");
 
   const fileChunk = stream.slice(start, end + 1);
 
@@ -100,4 +61,6 @@ await serve(async (req) => {
     headers: responseHeaders
   });
 });
+
+await serve(router.routes);
 
