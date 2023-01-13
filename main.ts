@@ -1,6 +1,4 @@
 import {serve} from "https://deno.land/std@0.155.0/http/server.ts";
-import { readAll } from "https://deno.land/std@0.171.0/streams/conversion.ts";
-import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 
 function readRangeHeader(range: string | null, totalLength: number) {
   if (range == null || range.length == 0)
@@ -27,6 +25,8 @@ function readRangeHeader(range: string | null, totalLength: number) {
   return result;
 }
 
+let cache;
+
 await serve(async (req) => {
   const url = new URL(req.url);
 
@@ -43,16 +43,27 @@ await serve(async (req) => {
   let contentType;
   let stream;
 
-  console.log(url.pathname);
-
   if (url.pathname === "/video") {
-    const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fPS8g3EDgTdmLqgGmjfjUwBeBOOKByMqyNKeEBYAH5J9ltXwgXOR-VRlOV0Jaakr/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/Big%20Buck%20Bunny%20Demo.mp4`);
-    // const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`);
-    const file = await Deno.open(resp.path, { read: true });
-    const blob = await readAll(file);
-    stream = blob.buffer;
+    const fileURL = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fPS8g3EDgTdmLqgGmjfjUwBeBOOKByMqyNKeEBYAH5J9ltXwgXOR-VRlOV0Jaakr/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/Big%20Buck%20Bunny%20Demo.mp4`;
+    const fileURL2 = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`;
+    if (cache) {
+      const resp = await fetch(fileURL2, {
+        method: "HEAD",
+      });
+      stream = cache;
+      contentLength = resp.headers.get("content-length");
+    } else {
+      const resp = await fetch(fileURL2);
+      // const resp = await cache(`https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/fYB6fZxum_9-ZLZ8isHQt1rzEuCzBZsdVTJeJuP1TnzOj6E-uKkZZxoZcFYzIAfk/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/BigBuckBunny_640x360.m4v`);
+      // const file = await Deno.open(resp.path, { read: true });
+      // const blob = await readAll(file);
+      // stream = blob.buffer;
+      const blob = await resp.blob();
+      stream = await blob.arrayBuffer();
+      cache = stream;
+      contentLength = resp.headers.get("content-length");
+    }
     contentType = "video/mp4";
-    contentLength = blob.length;
   } else {
     return new Response("Not Found", {
       status: 404,
