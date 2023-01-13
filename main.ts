@@ -35,7 +35,6 @@ router.get<{file: string}>("/video/:file", async (req, params) => {
   // const cachedResp = await cache.match(req);
 
   const resp = await fetch(fileURL);
-  await cache.put(req, resp);
   const blob = await resp.blob();
   const stream = await blob.arrayBuffer();
   const contentLength = parseInt(resp.headers.get("content-length") || "0") || 0;
