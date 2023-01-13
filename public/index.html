@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt_br">
+<head>
+  <meta charset="UTF-8">
+
+  <style>
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      font-family: sans-serif;
+      font-size: 16px;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: center;
+    }
+  </style>
+
+  <title>DEMO: download parcial de vídeo</title>
+
+  <script type="text/javascript">
+    function onLoad() {
+      var sec = parseInt(document.location.search.substr(1));
+
+      if (!isNaN(sec))
+        mainPlayer.currentTime = sec;
+    }
+  </script>
+</head>
+<body>
+  <h1>DEMO: download parcial de vídeo</h1>
+
+  <video
+    id="mainPlayer"
+    controls
+    autoplay
+    width="640"
+    height="360"
+    onloadedmetadata="onLoad()"
+  >
+    <source src="/video" />
+  </video >
+
+  <h2>Pular reprodução</h2>
+
+  <ul>
+    <li><a href="/?60">Pular para 1:00</a></li>
+    <li><a href="/?120">Pular para 2:00</a></li>
+  </ul>
+</body>
+</html>
