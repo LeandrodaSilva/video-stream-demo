@@ -30,7 +30,7 @@ router.get("/", async (req) => {
 
 router.get<{file: string}>("/video/:file", async (req, params) => {
   const {file} = params;
-  const fileURL = `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/x4yitashSSfnmYt0Hx1Chx1FHM2thUiXw5ko9wk7KdV61WxexoAHetsH2Qo-mJpU/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/${file}`;
+  const fileURL = Deno.env.get("VIDEO_URL") || `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/x4yitashSSfnmYt0Hx1Chx1FHM2thUiXw5ko9wk7KdV61WxexoAHetsH2Qo-mJpU/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/${file}`;
 
   // const cachedResp = await cache.match(req);
 
