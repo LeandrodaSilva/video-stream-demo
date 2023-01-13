@@ -5,7 +5,7 @@ import readRangeHeader from "./readRangeHeader.ts";
 
 const ONE_MB = 1024 * 1024;
 
-const cache = inMemoryCache(500 * ONE_MB);
+const cache = inMemoryCache(ONE_MB);
 const router = new Router();
 
 router.get("/", async (req) => {
