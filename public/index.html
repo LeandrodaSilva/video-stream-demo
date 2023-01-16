@@ -134,16 +134,18 @@
             return resp;
           }).catch(err => {
             console.error(err);
-            failedRequests.push(request);
+            failedRequests.push(i);
           })
 
           chunckRequests.push(request);
         }
 
-        const chunckResponses = await Promise.all(chunckRequests);
+        let chunckResponses = await Promise.all(chunckRequests);
 
         if (failedRequests.length > 0) {
-          await Promise.all(failedRequests);
+          for (const failedRequest of failedRequests) {
+            chunckResponses[failedRequest] = await chunckRequests[failedRequest];
+          }
         }
 
         downloadProgress.innerHTML = 'Juntando partes...';
