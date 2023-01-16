@@ -146,6 +146,11 @@
         downloadProgress.innerHTML = 'Criando arquivo...';
         const blob = new Blob(chunckBlobs, { type: contentType });
 
+        if (blob.size !== totalSize) {
+          downloadProgress.innerHTML = 'Erro: tamanho do arquivo incorreto';
+          return;
+        }
+
         const url = URL.createObjectURL(blob);
 
         const a = document.createElement('a');
