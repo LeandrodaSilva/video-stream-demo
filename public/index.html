@@ -113,6 +113,7 @@
         console.log('Chunck size:', chunckSize);
 
         const chunckRequests = [];
+        const failedRequests = [];
 
         for (let i = 0; i < chunckParts; i++) {
           const start = i * chunckSize;
@@ -134,12 +135,16 @@
               return resp;
             }).catch(err => {
               console.error(err);
-              return chunckRequests[i];
+              failedRequests[i] = chunckRequests[i];
             })
           );
         }
 
         const chunckResponses = await Promise.all(chunckRequests);
+
+        if (failedRequests.length > 0) {
+          await Promise.all(failedRequests);
+        }
 
         downloadProgress.innerHTML = 'Juntando partes...';
         const chunckBlobs = await Promise.all(
