@@ -2,7 +2,7 @@ import {serve} from "https://deno.land/std@0.155.0/http/server.ts";
 import { inMemoryCache } from "https://deno.land/x/httpcache@0.1.2/in_memory.ts";
 import Router from "./router.ts";
 import readRangeHeader from "./readRangeHeader.ts";
-
+// import {readAll} from "https://deno.land/std@0.171.0/streams/read_all.ts";
 const ONE_MB = 1024 * 1024;
 
 const cache = inMemoryCache(ONE_MB);
@@ -30,10 +30,14 @@ router.get("/", async (req) => {
 
 router.get<{file: string}>("/video/:file", async (req, params) => {
   const {file} = params;
-  const fileURL = Deno.env.get("VIDEO_URL") || `https://objectstorage.sa-saopaulo-1.oraclecloud.com/p/x4yitashSSfnmYt0Hx1Chx1FHM2thUiXw5ko9wk7KdV61WxexoAHetsH2Qo-mJpU/n/grrrbxjdhpwf/b/bucket-20230111-1557/o/public/videos/${file}`;
+  const fileURL = Deno.env.get("VIDEO_URL") || `https://file-browser.leproj.com/api/public/dl/w81Lk3nE?inline=true`;
 
   // const cachedResp = await cache.match(req);
 
+  // const fsFile = await Deno.open(`./public/video/${file}`, {read: true});
+  // const stream = await readAll(fsFile);
+  // const contentLength = stream.byteLength;
+  // const contentType = "video/mp4";
   const resp = await fetch(fileURL);
   const blob = await resp.blob();
   const stream = await blob.arrayBuffer();

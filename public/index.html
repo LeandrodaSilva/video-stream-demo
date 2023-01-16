@@ -20,6 +20,36 @@
       justify-content: start;
       align-items: center;
     }
+
+    button#download {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #000;
+      background: #809fef;
+      cursor: pointer;
+    }
+
+    button#download:hover {
+      background: #6c8de7;
+    }
+
+    button#download:active {
+      background: #5a7bd0;
+    }
+
+    button#download:focus {
+      outline: none;
+    }
+
+    button#download:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    span#download-progress {
+      margin-top: 10px;
+      font-size: 12px;
+    }
   </style>
 
   <title>DEMO: download parcial de vídeo</title>
@@ -44,7 +74,7 @@
     height="360"
     onloadedmetadata="onLoad()"
   >
-    <source src="/video/BigBuckBunny_640x360.m4v" />
+    <source src="/video/Big Buck Bunny Demo.mp4" />
   </video >
 
   <h2>Pular reprodução</h2>
@@ -53,5 +83,83 @@
     <li><a href="/?60">Pular para 1:00</a></li>
     <li><a href="/?120">Pular para 2:00</a></li>
   </ul>
+
+  <button id="download" type="button">Download</button>
+  <span id="download-progress"></span>
+
+  <script>
+    const btnDownload = document.querySelector('#download');
+    const downloadProgress = document.querySelector('#download-progress');
+
+    if (btnDownload) {
+      btnDownload.addEventListener("click", async (event) => {
+        event.preventDefault();
+        btnDownload.disabled = true;
+
+        const headRequest = await fetch('/video/Big Buck Bunny Demo.mp4', {
+          method: 'HEAD'
+        });
+
+        const contentLength = headRequest.headers.get('content-length');
+        const contentRange = headRequest.headers.get('content-range');
+        const contentType = headRequest.headers.get('content-type');
+        const totalSize = parseInt(contentLength || contentRange.split('/')[1]);
+
+        console.log('Total size:', totalSize);
+
+        const chunckParts = 10;
+        const chunckSize = Math.ceil(totalSize / chunckParts);
+
+        console.log('Chunck size:', chunckSize);
+
+        const chunckRequests = [];
+
+        for (let i = 0; i < chunckParts; i++) {
+          const start = i * chunckSize;
+          let end = start + chunckSize - 1;
+
+          if (end > totalSize)
+            end = totalSize - 1;
+
+          console.log('Chunck', i, 'start:', start, 'end:', end);
+
+          chunckRequests.push(
+            fetch('/video/Big Buck Bunny Demo.mp4', {
+              headers: {
+                'Range': `bytes=${start}-${end}`
+              }
+            }).then(resp => {
+              const percent = Math.round((start / totalSize) * 100);
+              downloadProgress.innerHTML = `Baixando ${percent}%`;
+              return resp;
+            })
+          );
+        }
+
+        const chunckResponses = await Promise.all(chunckRequests);
+
+        downloadProgress.innerHTML = 'Juntando partes...';
+        const chunckBlobs = await Promise.all(
+          chunckResponses.map(response => response.blob())
+        );
+
+        downloadProgress.innerHTML = 'Criando arquivo...';
+        const blob = new Blob(chunckBlobs, { type: contentType });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Big Buck Bunny Demo.${contentType.split('/')[1]}`;
+
+        downloadProgress.innerHTML = 'Abrindo download...';
+        a.click();
+
+        downloadProgress.innerHTML = 'Download concluído!';
+
+        btnDownload.disabled = false;
+      })
+    }
+  </script>
 </body>
 </html>

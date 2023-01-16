@@ -88,7 +88,7 @@ export default class Router {
         match = route.match(url.pathname);
         const sameMethod = route.method.toLowerCase() === req.method.toLowerCase();
         const samePath = match && match.path === url.pathname;
-        return samePath && (sameMethod || route.method === "USE");
+        return samePath && (sameMethod || route.method === "USE" || req.method === "OPTIONS" || req.method === "HEAD");
       },
     );
 
