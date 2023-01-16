@@ -134,7 +134,7 @@
             return resp;
           }).catch(err => {
             console.error(err);
-            failedRequests[i] = request;
+            failedRequests.push(request);
           })
 
           chunckRequests.push(request);
