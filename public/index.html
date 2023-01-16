@@ -124,20 +124,20 @@
 
           console.log('Chunck', i, 'start:', start, 'end:', end);
 
-          chunckRequests.push(
-            fetch('/video/Big Buck Bunny Demo.mp4', {
-              headers: {
-                'Range': `bytes=${start}-${end}`
-              }
-            }).then(resp => {
-              const percent = Math.round((start / totalSize) * 100);
-              downloadProgress.innerHTML = `Baixando ${percent}%`;
-              return resp;
-            }).catch(err => {
-              console.error(err);
-              failedRequests[i] = chunckRequests[i];
-            })
-          );
+          const request = fetch('/video/Big Buck Bunny Demo.mp4', {
+            headers: {
+              'Range': `bytes=${start}-${end}`
+            }
+          }).then(resp => {
+            const percent = Math.round((start / totalSize) * 100);
+            downloadProgress.innerHTML = `Baixando ${percent}%`;
+            return resp;
+          }).catch(err => {
+            console.error(err);
+            failedRequests[i] = request;
+          })
+
+          chunckRequests.push(request);
         }
 
         const chunckResponses = await Promise.all(chunckRequests);
