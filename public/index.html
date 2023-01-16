@@ -118,7 +118,7 @@
           const start = i * chunckSize;
           let end = start + chunckSize - 1;
 
-          if (end > totalSize)
+          if (end >= totalSize)
             end = totalSize - 1;
 
           console.log('Chunck', i, 'start:', start, 'end:', end);
