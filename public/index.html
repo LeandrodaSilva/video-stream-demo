@@ -107,7 +107,7 @@
 
         console.log('Total size:', totalSize);
 
-        const chunckParts = 100;
+        const chunckParts = 10;
         const chunckSize = Math.ceil(totalSize / chunckParts);
 
         console.log('Chunck size:', chunckSize);
@@ -132,6 +132,9 @@
               const percent = Math.round((start / totalSize) * 100);
               downloadProgress.innerHTML = `Baixando ${percent}%`;
               return resp;
+            }).catch(err => {
+              console.error(err);
+              return chunckRequests[i];
             })
           );
         }
