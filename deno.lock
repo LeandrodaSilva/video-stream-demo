@@ -127,6 +127,10 @@
     "https://deno.land/x/oak@v10.6.0/util.ts": "090f6fbc994a91709560184cdde0d9e72056a41e620da7cde84011e11e6393a3",
     "https://deno.land/x/path_to_regexp@v6.2.0/index.ts": "e94c04a44bbecac99ff2db2d831afe98b423e627b775cb57fc7935f848c64c51",
     "https://deno.land/x/path_to_regexp@v6.2.1/index.ts": "894060567837bae8fc9c5cbd4d0a05e9024672083d5883b525c031eea940e556",
+    "https://deno.land/x/server_deno@v0.1.0/app.ts": "053e110028b3ea4487fb90e1929646e0e8012568972475793a4c320fa5aa745b",
+    "https://deno.land/x/server_deno@v0.1.0/deps.ts": "1f62bc22f7a44332f12d0e1ed2d380aed2f9cc7cfa403cc211ebc265f1e15000",
+    "https://deno.land/x/server_deno@v0.1.0/mod.ts": "739fe82ec2b15454293d43e50a5472cb69153677cc128d8240a1cb884ac6eecc",
+    "https://deno.land/x/server_deno@v0.1.0/router.ts": "c5c055257dd95ab5806dadf220c12f14ad0cf4339b3a9db3528c14747ff58cb7",
     "https://raw.githubusercontent.com/jshttp/mime-db/v1.52.0/db.json": "85c8e1ba609079947c8df83c092900ab0226e1d7b60e5e7105fb7dd701833263"
   }
 }

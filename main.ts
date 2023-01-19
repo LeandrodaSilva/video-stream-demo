@@ -1,11 +1,12 @@
-import {serve} from "https://deno.land/std@0.155.0/http/server.ts";
-import { inMemoryCache } from "https://deno.land/x/httpcache@0.1.2/in_memory.ts";
-import Router from "./router.ts";
+import {inMemoryCache} from "https://deno.land/x/httpcache@0.1.2/in_memory.ts";
 import readRangeHeader from "./readRangeHeader.ts";
+import {App, Router} from "https://deno.land/x/server_deno@v0.1.0/mod.ts";
 // import {readAll} from "https://deno.land/std@0.171.0/streams/read_all.ts";
 const ONE_MB = 1024 * 1024;
 
 const cache = inMemoryCache(ONE_MB);
+
+const app = new App();
 const router = new Router();
 
 router.get("/", async (req) => {
@@ -83,5 +84,8 @@ router.get<{file: string}>("/video/:file", async (req, params) => {
   });
 });
 
-await serve(router.routes);
+
+app.use(router);
+
+app.start();
 
