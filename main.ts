@@ -1,21 +1,21 @@
-import {inMemoryCache} from "https://deno.land/x/httpcache@0.1.2/in_memory.ts";
+// import {inMemoryCache} from "https://deno.land/x/httpcache@0.1.2/in_memory.ts";
 import readRangeHeader from "./readRangeHeader.ts";
 import {App, Router} from "https://deno.land/x/server_deno@v0.1.0/mod.ts";
 // import {readAll} from "https://deno.land/std@0.171.0/streams/read_all.ts";
 const ONE_MB = 1024 * 1024;
 
-const cache = inMemoryCache(ONE_MB);
+// const cache = inMemoryCache(ONE_MB);
 
 const app = new App();
 const router = new Router();
 
 router.get("/", async (req) => {
-  const cachedResp = await cache.match(req);
+//   const cachedResp = await cache.match(req);
 
-  if (cachedResp) {
-    cachedResp.headers.set("cache-hit", "true");
-    return cachedResp;
-  }
+//   if (cachedResp) {
+//     cachedResp.headers.set("cache-hit", "true");
+//     return cachedResp;
+//   }
 
   const html = await Deno.readTextFile("./public/index.html");
   const resp = new Response(html, {
@@ -24,7 +24,7 @@ router.get("/", async (req) => {
     },
   });
 
-  await cache.put(req, resp.clone());
+//   await cache.put(req, resp.clone());
 
   return resp;
 });
