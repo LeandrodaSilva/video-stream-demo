@@ -31,7 +31,7 @@ router.get("/", async (req) => {
 
 router.get<{file: string}>("/video/:file", async (req, params) => {
   const {file} = params;
-  const fileURL = Deno.env.get("VIDEO_URL") || `https://file-browser.leproj.com/api/public/dl/w81Lk3nE?inline=true`;
+  const fileURL = Deno.env.get("VIDEO_URL") || `https://stosmodev.blob.core.windows.net/site-seb/banner_03.webm`;
 
   // const cachedResp = await cache.match(req);
 
